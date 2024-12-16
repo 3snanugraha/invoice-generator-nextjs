@@ -29,11 +29,21 @@ export default function Home() {
       if (invoiceRef.current) {
         try {
           const canvas = await html2canvas(invoiceRef.current, {
-            scale: 1.5, // Reduced from 2 to 1.5
+            scale: 2,
             logging: false,
             useCORS: true,
             imageTimeout: 0,
+            windowWidth: 1024,
+            windowHeight: invoiceRef.current.scrollHeight,
             removeContainer: true,
+            onclone: (clonedDoc) => {
+              const element = clonedDoc.querySelector('#invoice-container') as HTMLElement;
+              if (element) {
+                element.style.width = '1024px';
+                element.style.margin = '0';
+                element.style.padding = '20px';
+              }
+            }
           });
           
           const a4Width = 210;
@@ -55,7 +65,7 @@ export default function Home() {
           const yOffset = (a4Height - (canvas.height * ratio / 96 * 25.4)) / 2;
   
           doc.addImage(
-            canvas.toDataURL('image/png', 0.7), // Added quality parameter (0.7 = 70% quality)
+            canvas.toDataURL('image/png', 1.0),
             'PNG',
             xOffset,
             yOffset,
@@ -71,9 +81,9 @@ export default function Home() {
           console.error('Error generating PDF:', error);
         }
       }
-    }, 500);
-  };  
-
+    }, 1000);
+  };
+  
   const addBooking = () => {
     setBookings([...bookings, {
       description: '',
