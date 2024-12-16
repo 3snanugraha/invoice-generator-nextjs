@@ -25,7 +25,7 @@ export default function InvoiceTemplate({
   const calculateTotal = () => bookings.reduce((sum, booking) => sum + booking.amount, 0);
   
   return (
-    <div className="bg-white p-12">
+    <div id="invoice-container" className="bg-white p-8 max-w-4xl mx-auto">
       <div className="max-w-5xl mx-auto border border-gray-300 p-8 text-black">
         <h1 className="text-center text-2xl font-bold mb-1">INVOICE</h1>
         
