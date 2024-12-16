@@ -15,8 +15,24 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Generator Faktur - NUSA INDAH PANJALU HOTEL",
   description: "Aplikasi pembuat faktur untuk NUSA INDAH PANJALU HOTEL",
+  manifest: '/manifest.json',
   icons: {
     icon: '/logo.png',
+    apple: '/logo.png',
+  },
+  themeColor: '#4f46e5',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Generator Faktur",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
   },
 };
 

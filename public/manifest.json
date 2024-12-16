@@ -1,0 +1,21 @@
+{
+  "name": "Generator Faktur - NUSA INDAH PANJALU HOTEL",
+  "short_name": "Generator Faktur",
+  "description": "Aplikasi pembuat faktur untuk NUSA INDAH PANJALU HOTEL",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/logo-pwa.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo-pwa.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
