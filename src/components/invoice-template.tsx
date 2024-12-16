@@ -25,7 +25,7 @@ export default function InvoiceTemplate({
   const calculateTotal = () => bookings.reduce((sum, booking) => sum + booking.amount, 0);
   
   return (
-    <div id="invoice-container" className="bg-white p-8 max-w-4xl mx-auto">
+    <div id="invoice-container" className="bg-white p-8 w-[210mm] min-h-[297mm] mx-auto">
       <div className="max-w-5xl mx-auto border border-gray-300 p-8 text-black">
         <h1 className="text-center text-2xl font-bold mb-1">INVOICE</h1>
         
@@ -55,21 +55,23 @@ export default function InvoiceTemplate({
         <div className="border-t border-b border-gray-300 my-2">
         </div>
 
-        <div className="flex justify-between items-center mb-4">
-          <div>
+        <div className="flex mb-4">
+          <div className="w-[60%]">
             <p className="font-bold">Bill To</p>
             <p>{customerName}</p>
           </div>
-          <div>
-            <p className="font-bold">Invoice No</p>
-            <p>Invoice Date</p>
-          </div>
-          <div>
-            <p className="font-bold">{invoiceNumber}</p>
-            <p>{new Date(invoiceDate).toLocaleDateString('en-US', {day: '2-digit', month: 'short', year: 'numeric' })}</p>
+          <div className="w-[40%] flex justify-between">
+            <div>
+              <p className="font-bold">Invoice No</p>
+              <p>Invoice Date</p>
+            </div>
+            <div>
+              <p className="font-bold">{invoiceNumber}</p>
+              <p>{new Date(invoiceDate).toLocaleDateString('en-US', {day: '2-digit', month: 'short', year: 'numeric' })}</p>
+            </div>
           </div>
         </div>
-
+        
         <table className="w-full border-collapse border border-gray-300 mb-4">
             <thead>
             <tr className="bg-blue-500 text-white">

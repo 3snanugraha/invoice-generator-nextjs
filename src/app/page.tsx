@@ -4,6 +4,7 @@ import Image from 'next/image';
 import InvoiceTemplate from '@/components/invoice-template';
 import { jsPDF } from "jspdf";
 import html2canvas from 'html2canvas';
+import ReactDOM from 'react-dom/client';
 
 interface RoomBooking {
   description: string;
@@ -23,66 +24,62 @@ export default function Home() {
   const [showPreview, setShowPreview] = useState(false);
 
   const generatePDF = async () => {
-    setShowPreview(true);
-    
-    setTimeout(async () => {
-      if (invoiceRef.current) {
-        try {
-          const canvas = await html2canvas(invoiceRef.current, {
-            scale: 2,
-            logging: false,
-            useCORS: true,
-            imageTimeout: 0,
-            windowWidth: 1024,
-            windowHeight: invoiceRef.current.scrollHeight,
-            removeContainer: true,
-            onclone: (clonedDoc) => {
-              const element = clonedDoc.querySelector('#invoice-container') as HTMLElement;
-              if (element) {
-                element.style.width = '1024px';
-                element.style.margin = '0';
-                element.style.padding = '20px';
-              }
-            }
-          });
-          
-          const a4Width = 210;
-          const a4Height = 297;
+    const tempDiv = document.createElement('div');
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    tempDiv.style.width = '210mm';
+    tempDiv.style.minHeight = '297mm';
+    document.body.appendChild(tempDiv);
   
-          const pxWidth = (a4Width * 96) / 25.4;
-          const pxHeight = (a4Height * 96) / 25.4;
+    const root = ReactDOM.createRoot(tempDiv);
+    root.render(
+      <InvoiceTemplate
+        customerName={customerName}
+        invoiceNumber={invoiceNumber}
+        invoiceDate={invoiceDate}
+        bookings={bookings}
+        paymentDate={paymentDate}
+        paidAmount={paidAmount}
+      />
+    );
   
-          const ratio = Math.min(pxWidth / canvas.width, pxHeight / canvas.height);
-          
-          const doc = new jsPDF({
-            orientation: "portrait",
-            unit: "mm",
-            format: "a4",
-            compress: true
-          });
+    await new Promise(resolve => setTimeout(resolve, 100));
   
-          const xOffset = (a4Width - (canvas.width * ratio / 96 * 25.4)) / 2;
-          const yOffset = (a4Height - (canvas.height * ratio / 96 * 25.4)) / 2;
+    try {
+      const canvas = await html2canvas(tempDiv, {
+        scale: 2,
+        logging: false,
+        useCORS: true,
+        imageTimeout: 0,
+        width: 793, // 210mm in pixels
+        height: 1122 // 297mm in pixels
+      });
   
-          doc.addImage(
-            canvas.toDataURL('image/png', 1.0),
-            'PNG',
-            xOffset,
-            yOffset,
-            canvas.width * ratio / 96 * 25.4,
-            canvas.height * ratio / 96 * 25.4,
-            undefined,
-            'FAST'
-          );
-          
-          doc.save(`Invoice-${invoiceNumber || 'untitled'}.pdf`);
-          setShowPreview(false);
-        } catch (error) {
-          console.error('Error generating PDF:', error);
-        }
-      }
-    }, 1000);
-  };
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+        compress: true
+      });
+  
+      doc.addImage(
+        canvas.toDataURL('image/png', 1.0),
+        'PNG',
+        0,
+        0,
+        210,
+        297,
+        undefined,
+        'FAST'
+      );
+      
+      doc.save(`Invoice-${invoiceNumber || 'untitled'}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    } finally {
+      document.body.removeChild(tempDiv);
+    }
+  };  
   
   const addBooking = () => {
     setBookings([...bookings, {
@@ -286,29 +283,43 @@ export default function Home() {
 
       {/* Preview Modal */}
       {showPreview && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-4 rounded-lg max-h-[90vh] overflow-auto relative">
+        <div className="fixed inset-0 bg-black/50 flex items-start justify-center z-50 pt-8">
+          <div className="bg-white rounded-lg w-[95vw] h-[90vh] md:w-auto md:h-auto relative overflow-hidden">
             <button 
               onClick={() => setShowPreview(false)}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 z-10"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <div ref={invoiceRef}>
-              <InvoiceTemplate
-                customerName={customerName}
-                invoiceNumber={invoiceNumber}
-                invoiceDate={invoiceDate}
-                bookings={bookings}
-                paymentDate={paymentDate}
-                paidAmount={paidAmount}
-              />
+            <div className="w-full h-full overflow-auto flex items-start justify-center p-8">
+              <div 
+                ref={invoiceRef} 
+                className="w-[210mm] min-h-[297mm] transform-gpu origin-top mt-8"
+                style={{
+                  transform: `scale(${Math.min(
+                    (window.innerWidth * 0.95 - 64) / 793, 
+                    (window.innerHeight * 0.90 - 96) / 1122
+                  )})`
+                }}
+              >
+                <InvoiceTemplate
+                  customerName={customerName}
+                  invoiceNumber={invoiceNumber}
+                  invoiceDate={invoiceDate}
+                  bookings={bookings}
+                  paymentDate={paymentDate}
+                  paidAmount={paidAmount}
+                />
+              </div>
             </div>
           </div>
         </div>
       )}
+
+
+
     </div>
   );
 }
