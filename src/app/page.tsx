@@ -27,8 +27,8 @@ export default function Home() {
     const tempDiv = document.createElement('div');
     tempDiv.style.position = 'absolute';
     tempDiv.style.left = '-9999px';
-    tempDiv.style.width = '210mm';
-    tempDiv.style.minHeight = '297mm';
+    tempDiv.style.width = '793px';
+    tempDiv.style.height = '1122px';
     document.body.appendChild(tempDiv);
   
     const root = ReactDOM.createRoot(tempDiv);
@@ -43,43 +43,42 @@ export default function Home() {
       />
     );
   
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 500));
   
     try {
       const canvas = await html2canvas(tempDiv, {
         scale: 2,
-        logging: false,
         useCORS: true,
-        imageTimeout: 0,
-        width: 793, // 210mm in pixels
-        height: 1122 // 297mm in pixels
+        allowTaint: true,
+        scrollY: -window.scrollY,
+        onclone: (doc) => {
+          const imgElements = doc.querySelectorAll('img');
+          const promises = Array.from(imgElements).map((img) => {
+            return new Promise((resolve) => {
+              img.onload = () => resolve(null);
+              if (img.complete) resolve(null);
+            });
+          });
+          return Promise.all(promises);
+        },
       });
   
-      const doc = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
+      const imgData = canvas.toDataURL('image/png', 1.0);
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
         compress: true
       });
   
-      doc.addImage(
-        canvas.toDataURL('image/png', 1.0),
-        'PNG',
-        0,
-        0,
-        210,
-        297,
-        undefined,
-        'FAST'
-      );
-      
-      doc.save(`Invoice-${invoiceNumber || 'untitled'}.pdf`);
-    } catch (error) {
-      console.error('Error generating PDF:', error);
+      pdf.addImage(imgData, 'PNG', 0, 0, 210, 297, undefined, 'FAST');
+      pdf.save(`Invoice-${invoiceNumber || 'untitled'}.pdf`);
     } finally {
       document.body.removeChild(tempDiv);
+      root.unmount();
     }
-  };  
+  };
+  
   
   const addBooking = () => {
     setBookings([...bookings, {
@@ -124,7 +123,7 @@ export default function Home() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-black placeholder-gray-400"
                 value={invoiceNumber}
                 onChange={(e) => setInvoiceNumber(e.target.value)}
-                placeholder="FAK-0000"
+                placeholder="INV-0000"
               />
             </div>
             <div className="space-y-2">
@@ -301,7 +300,8 @@ export default function Home() {
                   transform: `scale(${Math.min(
                     (window.innerWidth * 0.95 - 64) / 793, 
                     (window.innerHeight * 0.90 - 96) / 1122
-                  )})`
+                  )})`,
+                  transformOrigin: 'top center'
                 }}
               >
                 <InvoiceTemplate
@@ -317,7 +317,6 @@ export default function Home() {
           </div>
         </div>
       )}
-
 
 
     </div>
